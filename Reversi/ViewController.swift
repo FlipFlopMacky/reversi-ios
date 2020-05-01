@@ -339,52 +339,6 @@ extension ViewController {
     }
 }
 
-// MARK: Inputs
-
-extension ViewController {
-    /// リセットボタンが押された場合に呼ばれるハンドラーです。
-    /// アラートを表示して、ゲームを初期化して良いか確認し、
-    /// "OK" が選択された場合ゲームを初期化します。
-    @IBAction func pressResetButton(_ sender: UIButton) {
-        let alertController = UIAlertController(
-            title: "Confirmation",
-            message: "Do you really want to reset the game?",
-            preferredStyle: .alert
-        )
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
-        alertController.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
-            guard let self = self else { return }
-            
-            self.animationCanceller?.cancel()
-            self.animationCanceller = nil
-            
-            for side in Disk.sides {
-                self.playerCancellers[side]?.cancel()
-                self.playerCancellers.removeValue(forKey: side)
-            }
-            
-            self.newGame()
-            self.waitForPlayer()
-        })
-        present(alertController, animated: true)
-    }
-    
-    /// プレイヤーのモードが変更された場合に呼ばれるハンドラーです。
-    @IBAction func changePlayerControlSegment(_ sender: UISegmentedControl) {
-        let side: Disk = Disk(index: playerControls.firstIndex(of: sender)!)
-        
-        try? saveGame()
-        
-        if let canceller = playerCancellers[side] {
-            canceller.cancel()
-        }
-        
-        if !isAnimating, side == turn, case .computer = Player(rawValue: sender.selectedSegmentIndex)! {
-            playTurnOfComputer()
-        }
-    }
-}
-
 extension ViewController: BoardViewDelegate {
     /// `boardView` の `x`, `y` で指定されるセルがタップされたときに呼ばれます。
     /// - Parameter boardView: セルをタップされた `BoardView` インスタンスです。
@@ -568,6 +522,52 @@ extension Optional where Wrapped == Disk {
             return "o"
         case .none:
             return "-"
+        }
+    }
+}
+
+// MARK: Inputs
+
+extension ViewController {
+    /// リセットボタンが押された場合に呼ばれるハンドラーです。
+    /// アラートを表示して、ゲームを初期化して良いか確認し、
+    /// "OK" が選択された場合ゲームを初期化します。
+    @IBAction func pressResetButton(_ sender: UIButton) {
+        let alertController = UIAlertController(
+            title: "Confirmation",
+            message: "Do you really want to reset the game?",
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+        alertController.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            
+            self.animationCanceller?.cancel()
+            self.animationCanceller = nil
+            
+            for side in Disk.sides {
+                self.playerCancellers[side]?.cancel()
+                self.playerCancellers.removeValue(forKey: side)
+            }
+            
+            self.newGame()
+            self.waitForPlayer()
+        })
+        present(alertController, animated: true)
+    }
+    
+    /// プレイヤーのモードが変更された場合に呼ばれるハンドラーです。
+    @IBAction func changePlayerControlSegment(_ sender: UISegmentedControl) {
+        let side: Disk = Disk(index: playerControls.firstIndex(of: sender)!)
+        
+        try? saveGame()
+        
+        if let canceller = playerCancellers[side] {
+            canceller.cancel()
+        }
+        
+        if !isAnimating, side == turn, case .computer = Player(rawValue: sender.selectedSegmentIndex)! {
+            playTurnOfComputer()
         }
     }
 }
