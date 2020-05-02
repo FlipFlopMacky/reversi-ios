@@ -26,6 +26,8 @@ class ViewController: UIViewController {
     
     private var playerCancellers: [Disk: Canceller] = [:]
     
+    var referee: Referee!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -69,18 +71,7 @@ extension ViewController {
         return count
     }
     
-    /// 盤上に置かれたディスクの枚数が多い方の色を返します。
-    /// 引き分けの場合は `nil` が返されます。
-    /// - Returns: 盤上に置かれたディスクの枚数が多い方の色です。引き分けの場合は `nil` を返します。
-    func sideWithMoreDisks() -> Disk? {
-        let darkCount = countDisks(of: .dark)
-        let lightCount = countDisks(of: .light)
-        if darkCount == lightCount {
-            return nil
-        } else {
-            return darkCount > lightCount ? .dark : .light
-        }
-    }
+    
     
     private func flippedDiskCoordinatesByPlacingDisk(_ disk: Disk, atX x: Int, y: Int) -> [(Int, Int)] {
         let directions = [
@@ -327,7 +318,7 @@ extension ViewController {
             messageDiskView.disk = side
             messageLabel.text = "'s turn"
         case .none:
-            if let winner = self.sideWithMoreDisks() {
+            if let winner = referee.sideWithMoreDisks(boardView: boardView) {
                 messageDiskSizeConstraint.constant = messageDiskSize
                 messageDiskView.disk = winner
                 messageLabel.text = " won"
