@@ -26,8 +26,6 @@ class ViewController: UIViewController {
     
     private var playerCancellers: [Disk: Canceller] = [:]
     
-    var referee: Referee!
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -318,7 +316,7 @@ extension ViewController {
             messageDiskView.disk = side
             messageLabel.text = "'s turn"
         case .none:
-            if let winner = referee.sideWithMoreDisks(boardView: boardView) {
+            if let winner = Referee.sideWithMoreDisks(boardView: boardView) {
                 messageDiskSizeConstraint.constant = messageDiskSize
                 messageDiskView.disk = winner
                 messageLabel.text = " won"
