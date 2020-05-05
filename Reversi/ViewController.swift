@@ -3,6 +3,9 @@ import UIKit
 extension Notification.Name {
     static let updateMessageViewsNotify = Notification.Name("updateMessageViewsNotify")
     static let updateCountLabelsNotify = Notification.Name("updateCountLabelsNotify")
+    
+    static let updateTurnNotify = Notification.Name("updateTurn")
+    static let updatePlayerControlsNotify = Notification.Name("updatePlayerControls")
 }
 
 class ViewController: UIViewController {
@@ -43,11 +46,14 @@ class ViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(updateMessageViews), name: .updateMessageViewsNotify, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(updateCountLabels), name: .updateCountLabelsNotify, object: nil)
         
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTurn(notification:)), name: .updateTurnNotify, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updatePlayerControls(notification:)), name: .updatePlayerControlsNotify, object: nil)
+        
         boardView.delegate = self
         messageDiskSize = messageDiskSizeConstraint.constant
         
         do {
-            try loadGame()
+            try PlayData.loadGame(boardView: boardView)
         } catch _ {
             newGame()
         }
@@ -237,71 +243,15 @@ class ViewController: UIViewController {
         }
     }
     
-    // MARK: Load
-    /// ゲームの状態をファイルから読み込み、復元します。
-    func loadGame() throws {
-        var path: String {
-            (NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first! as NSString).appendingPathComponent("Game")
-        }
-        let input = try String(contentsOfFile: path, encoding: .utf8)
-        var lines: ArraySlice<Substring> = input.split(separator: "\n")[...]
-        
-        guard var line = lines.popFirst() else {
-            throw FileIOError.read(path: path, cause: nil)
-        }
-        
-        do { // turn
-            guard
-                let diskSymbol = line.popFirst(),
-                let disk = Optional<Disk>(symbol: diskSymbol.description)
-            else {
-                throw FileIOError.read(path: path, cause: nil)
-            }
-            turn = disk
-        }
-
-        // players
-        for side in Disk.sides {
-            guard
-                let playerSymbol = line.popFirst(),
-                let playerNumber = Int(playerSymbol.description),
-                let player = Player(rawValue: playerNumber)
-            else {
-                throw FileIOError.read(path: path, cause: nil)
-            }
-            playerControls[side.index].selectedSegmentIndex = player.rawValue
-        }
-
-        do { // board
-            guard lines.count == boardView.height else {
-                throw FileIOError.read(path: path, cause: nil)
-            }
-            
-            var y = 0
-            while let line = lines.popFirst() {
-                var x = 0
-                for character in line {
-                    let disk = Disk?(symbol: "\(character)").flatMap { $0 }
-                    boardView.setDisk(disk, atX: x, y: y, animated: false)
-                    x += 1
-                }
-                guard x == boardView.width else {
-                    throw FileIOError.read(path: path, cause: nil)
-                }
-                y += 1
-            }
-            guard y == boardView.height else {
-                throw FileIOError.read(path: path, cause: nil)
-            }
-        }
-
-        NotificationCenter.default.post(name: .updateMessageViewsNotify, object: nil)
-        NotificationCenter.default.post(name: .updateCountLabelsNotify, object: nil)
+    // MARK:
+    @objc func updateTurn(notification: NSNotification?) {
+        self.turn = notification?.userInfo!["disc"] as? Disk
     }
     
-    enum FileIOError: Error {
-        case write(path: String, cause: Error?)
-        case read(path: String, cause: Error?)
+    @objc func updatePlayerControls(notification: NSNotification?) {
+        let side = (notification?.userInfo!["side"])! as! Disk
+        let rawValue = notification?.userInfo!["rawValue"] as! Int
+        self.playerControls[side.index].selectedSegmentIndex = rawValue
     }
     
     // MARK: Alert
