@@ -1,5 +1,10 @@
 import UIKit
 
+extension Notification.Name {
+    static let updateMessageViewsNotify = Notification.Name("updateMessageViewsNotify")
+    static let updateCountLabelsNotify = Notification.Name("updateCountLabelsNotify")
+}
+
 class ViewController: UIViewController {
     // MARK: Additional types
     enum Player: Int {
@@ -34,6 +39,9 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMessageViews), name: .updateMessageViewsNotify, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateCountLabels), name: .updateCountLabelsNotify, object: nil)
         
         boardView.delegate = self
         messageDiskSize = messageDiskSizeConstraint.constant
@@ -204,14 +212,14 @@ class ViewController: UIViewController {
     
     // MARK: Views
     /// 各プレイヤーの獲得したディスクの枚数を表示します。
-    func updateCountLabels() {
+    @objc func updateCountLabels() {
         for side in Disk.sides {
             countLabels[side.index].text = "\(Referee.countDisks(of: side, boardView: boardView))"
         }
     }
     
     /// 現在の状況に応じてメッセージを表示します。
-    func updateMessageViews() {
+    @objc func updateMessageViews() {
         switch turn {
         case .some(let side):
             messageDiskSizeConstraint.constant = messageDiskSize
@@ -287,8 +295,8 @@ class ViewController: UIViewController {
             }
         }
 
-        updateMessageViews()
-        updateCountLabels()
+        NotificationCenter.default.post(name: .updateMessageViewsNotify, object: nil)
+        NotificationCenter.default.post(name: .updateCountLabelsNotify, object: nil)
     }
     
     enum FileIOError: Error {
