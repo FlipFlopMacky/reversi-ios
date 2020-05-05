@@ -6,6 +6,23 @@ public enum Disk {
 extension Disk: Hashable {}
 
 extension Disk {
+    init(index: Int) {
+        for side in Disk.sides {
+            if index == side.index {
+                self = side
+                return
+            }
+        }
+        preconditionFailure("Illegal index: \(index)")
+    }
+    
+    var index: Int {
+        switch self {
+        case .dark: return 0
+        case .light: return 1
+        }
+    }
+    
     /// `Disk` のすべての値を列挙した `Array` 、 `[.dark, .light]` を返します。
     public static var sides: [Disk] {
         [.dark, .light]

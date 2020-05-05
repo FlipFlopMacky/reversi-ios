@@ -1,6 +1,12 @@
 import UIKit
 
 class ViewController: UIViewController {
+    // MARK: Additional types
+    enum Player: Int {
+        case manual = 0
+        case computer = 1
+    }
+    
     @IBOutlet private var boardView: BoardView!
     
     @IBOutlet private var messageDiskView: DiskView!
@@ -47,11 +53,8 @@ class ViewController: UIViewController {
         viewHasAppeared = true
         waitForPlayer()
     }
-}
-
-// MARK: Reversi logics
-
-extension ViewController {
+    
+    // MARK: Reversi logics
     /// `x`, `y` で指定されたセルに `disk` を置きます。
     /// - Parameter x: セルの列です。
     /// - Parameter y: セルの行です。
@@ -121,11 +124,8 @@ extension ViewController {
             }
         }
     }
-}
-
-// MARK: Game management
-
-extension ViewController {
+    
+    // MARK: Game management
     /// ゲームの状態を初期化し、新しいゲームを開始します。
     func newGame() {
         boardView.reset()
@@ -167,16 +167,7 @@ extension ViewController {
             } else {
                 self.turn = turn
                 updateMessageViews()
-                
-                let alertController = UIAlertController(
-                    title: "Pass",
-                    message: "Cannot place a disk.",
-                    preferredStyle: .alert
-                )
-                alertController.addAction(UIAlertAction(title: "Dismiss", style: .default) { [weak self] _ in
-                    self?.nextTurn()
-                })
-                present(alertController, animated: true)
+                passAlert()
             }
         } else {
             self.turn = turn
@@ -210,11 +201,8 @@ extension ViewController {
         
         playerCancellers[turn] = canceller
     }
-}
-
-// MARK: Views
-
-extension ViewController {
+    
+    // MARK: Views
     /// 各プレイヤーの獲得したディスクの枚数を表示します。
     func updateCountLabels() {
         for side in Disk.sides {
@@ -240,33 +228,13 @@ extension ViewController {
             }
         }
     }
-}
-
-extension ViewController: BoardViewDelegate {
-    /// `boardView` の `x`, `y` で指定されるセルがタップされたときに呼ばれます。
-    /// - Parameter boardView: セルをタップされた `BoardView` インスタンスです。
-    /// - Parameter x: セルの列です。
-    /// - Parameter y: セルの行です。
-    func boardView(_ boardView: BoardView, didSelectCellAtX x: Int, y: Int) {
-        guard let turn = turn else { return }
-        if isAnimating { return }
-        guard case .manual = Player(rawValue: playerControls[turn.index].selectedSegmentIndex)! else { return }
-        // try? because doing nothing when an error occurs
-        try? placeDisk(turn, atX: x, y: y, animated: true) { [weak self] _ in
-            self?.nextTurn()
-        }
-    }
-}
-
-// MARK: Save and Load
-
-extension ViewController {
-    private var path: String {
-        (NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first! as NSString).appendingPathComponent("Game")
-    }
     
+    // MARK: Load
     /// ゲームの状態をファイルから読み込み、復元します。
     func loadGame() throws {
+        var path: String {
+            (NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first! as NSString).appendingPathComponent("Game")
+        }
         let input = try String(contentsOfFile: path, encoding: .utf8)
         var lines: ArraySlice<Substring> = input.split(separator: "\n")[...]
         
@@ -327,88 +295,21 @@ extension ViewController {
         case write(path: String, cause: Error?)
         case read(path: String, cause: Error?)
     }
-}
-
-// MARK: Additional types
-
-extension ViewController {
-    enum Player: Int {
-        case manual = 0
-        case computer = 1
-    }
-}
-
-final class Canceller {
-    private(set) var isCancelled: Bool = false
-    private let body: (() -> Void)?
     
-    init(_ body: (() -> Void)?) {
-        self.body = body
+    // MARK: Alert
+    func passAlert() {
+        let alertController = UIAlertController(
+            title: "Pass",
+            message: "Cannot place a disk.",
+            preferredStyle: .alert
+        )
+        alertController.addAction(UIAlertAction(title: "Dismiss", style: .default) { [weak self] _ in
+            self?.nextTurn()
+        })
+        present(alertController, animated: true)
     }
     
-    func cancel() {
-        if isCancelled { return }
-        isCancelled = true
-        body?()
-    }
-}
-
-struct DiskPlacementError: Error {
-    let disk: Disk
-    let x: Int
-    let y: Int
-}
-
-// MARK: File-private extensions
-
-extension Disk {
-    init(index: Int) {
-        for side in Disk.sides {
-            if index == side.index {
-                self = side
-                return
-            }
-        }
-        preconditionFailure("Illegal index: \(index)")
-    }
-    
-    var index: Int {
-        switch self {
-        case .dark: return 0
-        case .light: return 1
-        }
-    }
-}
-
-extension Optional where Wrapped == Disk {
-    init?<S: StringProtocol>(symbol: S) {
-        switch symbol {
-        case "x":
-            self = .some(.dark)
-        case "o":
-            self = .some(.light)
-        case "-":
-            self = .none
-        default:
-            return nil
-        }
-    }
-    
-    var symbol: String {
-        switch self {
-        case .some(.dark):
-            return "x"
-        case .some(.light):
-            return "o"
-        case .none:
-            return "-"
-        }
-    }
-}
-
-// MARK: Inputs
-
-extension ViewController {
+    // MARK: Inputs
     /// リセットボタンが押された場合に呼ばれるハンドラーです。
     /// アラートを表示して、ゲームを初期化して良いか確認し、
     /// "OK" が選択された場合ゲームを初期化します。
@@ -448,6 +349,69 @@ extension ViewController {
         
         if !isAnimating, side == turn, case .computer = Player(rawValue: sender.selectedSegmentIndex)! {
             playTurnOfComputer()
+        }
+    }
+}
+
+extension ViewController: BoardViewDelegate {
+    /// `boardView` の `x`, `y` で指定されるセルがタップされたときに呼ばれます。
+    /// - Parameter boardView: セルをタップされた `BoardView` インスタンスです。
+    /// - Parameter x: セルの列です。
+    /// - Parameter y: セルの行です。
+    func boardView(_ boardView: BoardView, didSelectCellAtX x: Int, y: Int) {
+        guard let turn = turn else { return }
+        if isAnimating { return }
+        guard case .manual = Player(rawValue: playerControls[turn.index].selectedSegmentIndex)! else { return }
+        // try? because doing nothing when an error occurs
+        try? placeDisk(turn, atX: x, y: y, animated: true) { [weak self] _ in
+            self?.nextTurn()
+        }
+    }
+}
+
+final class Canceller {
+    private(set) var isCancelled: Bool = false
+    private let body: (() -> Void)?
+    
+    init(_ body: (() -> Void)?) {
+        self.body = body
+    }
+    
+    func cancel() {
+        if isCancelled { return }
+        isCancelled = true
+        body?()
+    }
+}
+
+struct DiskPlacementError: Error {
+    let disk: Disk
+    let x: Int
+    let y: Int
+}
+
+extension Optional where Wrapped == Disk {
+    init?<S: StringProtocol>(symbol: S) {
+        switch symbol {
+        case "x":
+            self = .some(.dark)
+        case "o":
+            self = .some(.light)
+        case "-":
+            self = .none
+        default:
+            return nil
+        }
+    }
+    
+    var symbol: String {
+        switch self {
+        case .some(.dark):
+            return "x"
+        case .some(.light):
+            return "o"
+        case .none:
+            return "-"
         }
     }
 }
