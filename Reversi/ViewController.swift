@@ -78,7 +78,7 @@ extension ViewController {
                 cleanUp()
 
                 completion?(isFinished)
-                try? self.saveGame()
+                try? PlayData.saveGame(boardView: self.boardView, turn: self.turn, playerControls: self.playerControls)
                 self.updateCountLabels()
             }
         } else {
@@ -89,7 +89,7 @@ extension ViewController {
                     self.boardView.setDisk(disk, atX: x, y: y, animated: false)
                 }
                 completion?(true)
-                try? self.saveGame()
+                try? PlayData.saveGame(boardView: self.boardView, turn: self.turn, playerControls: self.playerControls)
                 self.updateCountLabels()
             }
         }
@@ -138,7 +138,7 @@ extension ViewController {
         updateMessageViews()
         updateCountLabels()
         
-        try? saveGame()
+        try? PlayData.saveGame(boardView: self.boardView, turn: self.turn, playerControls: self.playerControls)
     }
     
     /// プレイヤーの行動を待ちます。
@@ -266,27 +266,27 @@ extension ViewController {
     }
     
     /// ゲームの状態をファイルに書き出し、保存します。
-    func saveGame() throws {
-        var output: String = ""
-        output += turn.symbol
-        for side in Disk.sides {
-            output += playerControls[side.index].selectedSegmentIndex.description
-        }
-        output += "\n"
-        
-        for y in boardView.yRange {
-            for x in boardView.xRange {
-                output += boardView.diskAt(x: x, y: y).symbol
-            }
-            output += "\n"
-        }
-        
-        do {
-            try output.write(toFile: path, atomically: true, encoding: .utf8)
-        } catch let error {
-            throw FileIOError.read(path: path, cause: error)
-        }
-    }
+//    func saveGame() throws {
+//        var output: String = ""
+//        output += turn.symbol
+//        for side in Disk.sides {
+//            output += playerControls[side.index].selectedSegmentIndex.description
+//        }
+//        output += "\n"
+//
+//        for y in boardView.yRange {
+//            for x in boardView.xRange {
+//                output += boardView.diskAt(x: x, y: y).symbol
+//            }
+//            output += "\n"
+//        }
+//
+//        do {
+//            try output.write(toFile: path, atomically: true, encoding: .utf8)
+//        } catch let error {
+//            throw FileIOError.read(path: path, cause: error)
+//        }
+//    }
     
     /// ゲームの状態をファイルから読み込み、復元します。
     func loadGame() throws {
@@ -417,7 +417,7 @@ extension Optional where Wrapped == Disk {
         }
     }
     
-    fileprivate var symbol: String {
+    var symbol: String {
         switch self {
         case .some(.dark):
             return "x"
@@ -463,7 +463,7 @@ extension ViewController {
     @IBAction func changePlayerControlSegment(_ sender: UISegmentedControl) {
         let side: Disk = Disk(index: playerControls.firstIndex(of: sender)!)
         
-        try? saveGame()
+        try? PlayData.saveGame(boardView: self.boardView, turn: self.turn, playerControls: self.playerControls)
         
         if let canceller = playerCancellers[side] {
             canceller.cancel()

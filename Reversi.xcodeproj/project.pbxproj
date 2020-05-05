@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2D533C72245DA33F009B6EE0 /* Referee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D533C71245DA33F009B6EE0 /* Referee.swift */; };
+		2DCB8D752461401A0095F4FD /* PlayData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCB8D7324606DEC0095F4FD /* PlayData.swift */; };
 		D636B39F23D35043007F370F /* DiskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D636B39E23D35043007F370F /* DiskView.swift */; };
 		D642BDB423A9FE4500396732 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D642BDB323A9FE4500396732 /* AppDelegate.swift */; };
 		D642BDB623A9FE4500396732 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D642BDB523A9FE4500396732 /* SceneDelegate.swift */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		2D533C71245DA33F009B6EE0 /* Referee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Referee.swift; sourceTree = "<group>"; };
+		2DCB8D7324606DEC0095F4FD /* PlayData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayData.swift; sourceTree = "<group>"; };
 		D636B39E23D35043007F370F /* DiskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskView.swift; sourceTree = "<group>"; };
 		D642BDB023A9FE4500396732 /* Reversi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reversi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D642BDB323A9FE4500396732 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 				D642BDB523A9FE4500396732 /* SceneDelegate.swift */,
 				D642BDB723A9FE4500396732 /* ViewController.swift */,
 				2D533C71245DA33F009B6EE0 /* Referee.swift */,
+				2DCB8D7324606DEC0095F4FD /* PlayData.swift */,
 				D642BDB923A9FE4500396732 /* Main.storyboard */,
 				D642BDBC23A9FE4700396732 /* Assets.xcassets */,
 				D642BDBE23A9FE4700396732 /* LaunchScreen.storyboard */,
@@ -231,6 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2DCB8D752461401A0095F4FD /* PlayData.swift in Sources */,
 				D636B39F23D35043007F370F /* DiskView.swift in Sources */,
 				D642BDD623AA0B3900396732 /* CellView.swift in Sources */,
 				D642BDD823AA0B5700396732 /* Disk.swift in Sources */,
