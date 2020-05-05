@@ -265,29 +265,6 @@ extension ViewController {
         (NSSearchPathForDirectoriesInDomains(.libraryDirectory, .userDomainMask, true).first! as NSString).appendingPathComponent("Game")
     }
     
-    /// ゲームの状態をファイルに書き出し、保存します。
-//    func saveGame() throws {
-//        var output: String = ""
-//        output += turn.symbol
-//        for side in Disk.sides {
-//            output += playerControls[side.index].selectedSegmentIndex.description
-//        }
-//        output += "\n"
-//
-//        for y in boardView.yRange {
-//            for x in boardView.xRange {
-//                output += boardView.diskAt(x: x, y: y).symbol
-//            }
-//            output += "\n"
-//        }
-//
-//        do {
-//            try output.write(toFile: path, atomically: true, encoding: .utf8)
-//        } catch let error {
-//            throw FileIOError.read(path: path, cause: error)
-//        }
-//    }
-    
     /// ゲームの状態をファイルから読み込み、復元します。
     func loadGame() throws {
         let input = try String(contentsOfFile: path, encoding: .utf8)
@@ -404,7 +381,7 @@ extension Disk {
 }
 
 extension Optional where Wrapped == Disk {
-    fileprivate init?<S: StringProtocol>(symbol: S) {
+    init?<S: StringProtocol>(symbol: S) {
         switch symbol {
         case "x":
             self = .some(.dark)
